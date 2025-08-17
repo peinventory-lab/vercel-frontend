@@ -1,0 +1,76 @@
+// src/components/InventoryTable.js
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+
+const InventoryTable = () => {
+  const [items, setItems] = useState([]);
+
+  const fetchInventory = async () => {
+    try {
+      const res = await axios.get('http://localhost:5050/api/inventory/all');
+      setItems(res.data);
+    } catch (err) {
+      console.error('Error fetching inventory:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchInventory();
+  }, []);
+
+  return (
+    <div style={styles.container}>
+      <h3>📦 Current Inventory</h3>
+      <table style={styles.table}>
+        <thead>
+          <tr>
+            <th>Item Name</th>
+            <th>Description</th>
+            <th>Location</th>
+            <th>Quantity</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.length > 0 ? (
+            items.map((item) => (
+              <tr key={item._id}>
+                <td>{item.name}</td>
+                <td>{item.description || '-'}</td>
+                <td>{item.location}</td>
+                <td>{item.quantity}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="4" style={{ textAlign: 'center' }}>No items found.</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+const styles = {
+  container: {
+    backgroundColor: '#fff',
+    padding: '20px',
+    borderRadius: '10px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+  },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse'
+  },
+  th: {
+    backgroundColor: '#f8f8f8',
+    padding: '10px',
+    textAlign: 'left'
+  },
+  td: {
+    padding: '10px',
+    borderBottom: '1px solid #eee'
+  }
+};
+
+export default InventoryTable;

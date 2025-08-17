@@ -1,0 +1,92 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useParams, useNavigate } from 'react-router-dom';
+
+function EditItemPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [item, setItem] = useState(null);
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    axios.get(`/api/inventory/${id}`)
+      .then(res => setItem(res.data))
+      .catch(err => console.error('Error loading item:', err));
+  }, [id]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setItem(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    axios.put(`/api/inventory/${id}`, item)
+      .then(() => {
+        setMessage('Item updated successfully!');
+        setTimeout(() => navigate('/inventory'), 1500);
+      })
+      .catch(err => {
+        console.error(err);
+        setMessage('Error updating item.');
+      });
+  };
+
+  if (!item) return <p>Loading item data...</p>;
+
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-4">✏️ Edit Inventory Item</h2>
+      <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+        <input
+          type="text"
+          name="itemName"
+          value={item.itemName}
+          onChange={handleChange}
+          placeholder="Item Name"
+          className="border px-3 py-2 w-full rounded"
+          required
+        />
+        <input
+          type="text"
+          name="description"
+          value={item.description}
+          onChange={handleChange}
+          placeholder="Description"
+          className="border px-3 py-2 w-full rounded"
+        />
+        <input
+          type="text"
+          name="location"
+          value={item.location}
+          onChange={handleChange}
+          placeholder="Location"
+          className="border px-3 py-2 w-full rounded"
+          required
+        />
+        <input
+          type="number"
+          name="count"
+          value={item.count}
+          onChange={handleChange}
+          placeholder="Quantity"
+          className="border px-3 py-2 w-full rounded"
+          min="0"
+          required
+        />
+        <button
+          type="submit"
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+        >
+          Update Item
+        </button>
+        {message && <p className="text-sm mt-2">{message}</p>}
+      </form>
+    </div>
+  );
+}
+
+export default EditItemPage;
