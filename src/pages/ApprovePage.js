@@ -1,5 +1,8 @@
+// src/pages/ApprovePage.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+
+const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5050';
 
 const ApprovePage = () => {
   const [requests, setRequests] = useState([]);
@@ -8,12 +11,13 @@ const ApprovePage = () => {
 
   useEffect(() => {
     fetchRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchRequests = async () => {
     try {
-      const res = await axios.get('http://localhost:5050/api/requests');
-      setRequests(res.data);
+      const res = await axios.get(`${API_BASE}/api/requests`);
+      setRequests(res.data || []);
     } catch (err) {
       console.error('Failed to fetch requests:', err);
     }
@@ -22,7 +26,7 @@ const ApprovePage = () => {
   const updateStatus = async (id, newStatus) => {
     try {
       setUpdatingId(id);
-      await axios.put(`http://localhost:5050/api/requests/${newStatus.toLowerCase()}/${id}`);
+      await axios.put(`${API_BASE}/api/requests/${newStatus.toLowerCase()}/${id}`);
       setMessage(`Request ${newStatus.toLowerCase()} successfully.`);
       fetchRequests();
     } catch (err) {
@@ -35,13 +39,17 @@ const ApprovePage = () => {
 
   const exportCSV = () => {
     const headers = ['Item Name', 'Quantity', 'Note', 'Requested By', 'Status'];
-    const rows = requests.map(r =>
-      [r.itemName, r.quantity, r.note || '', r.requestedBy, r.status]
-    );
+    const rows = requests.map(r => [
+      r.itemName || r.itemId?.name || 'Unknown',
+      r.quantity,
+      r.note || '',
+      r.requestedBy,
+      r.status
+    ]);
 
-    let csvContent = 'data:text/csv;charset=utf-8,'
-      + headers.join(',') + '\n'
-      + rows.map(e => e.join(',')).join('\n');
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      [headers, ...rows].map(e => e.join(',')).join('\n');
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
@@ -101,7 +109,7 @@ const ApprovePage = () => {
               const isRecent = index < 5;
               return (
                 <tr key={req._id} style={isRecent ? styles.recentRow : {}}>
-                  <td>{req.itemName}</td>
+                  <td>{req.itemName || req.itemId?.name || 'Unknown'}</td>
                   <td>{req.quantity}</td>
                   <td>{req.note || '—'}</td>
                   <td>{req.requestedBy}</td>

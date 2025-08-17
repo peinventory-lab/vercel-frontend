@@ -1,12 +1,15 @@
+// src/pages/RequestPage.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5050';
+
 const RequestPage = () => {
   const [items, setItems] = useState([]);
-  const [selectedItem, setSelectedItem] = useState('');
+  const [selectedItemId, setSelectedItemId] = useState('');
   const [quantity, setQuantity] = useState('');
   const [note, setNote] = useState('');
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState([]); // [{ itemId, name, quantity, note }]
   const [message, setMessage] = useState('');
 
   const user = JSON.parse(localStorage.getItem('user'));
@@ -14,8 +17,8 @@ const RequestPage = () => {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const res = await axios.get('http://localhost:5050/api/inventory');
-        setItems(res.data);
+        const res = await axios.get(`${API_BASE}/api/inventory`);
+        setItems(res.data || []);
       } catch (err) {
         console.error('Failed to fetch items:', err);
       }
@@ -24,34 +27,43 @@ const RequestPage = () => {
   }, []);
 
   const handleAddToCart = () => {
-    if (!selectedItem || !quantity) {
+    setMessage('');
+    if (!selectedItemId || !quantity) {
       setMessage('Please select an item and quantity.');
       return;
     }
-    const itemExists = cart.find(item => item.itemName === selectedItem);
-    if (itemExists) {
+
+    const existing = cart.find((c) => c.itemId === selectedItemId);
+    if (existing) {
       setMessage('Item already in cart. Edit it instead.');
       return;
     }
-    setCart([...cart, { itemName: selectedItem, quantity, note }]);
-    setSelectedItem('');
+
+    const item = items.find((i) => i._id === selectedItemId);
+    const name = item?.name || 'Unknown';
+
+    setCart((prev) => [...prev, { itemId: selectedItemId, name, quantity: Number(quantity), note }]);
+    setSelectedItemId('');
     setQuantity('');
     setNote('');
     setMessage('Item added to cart.');
   };
 
-  const handleRemoveFromCart = (itemName) => {
-    setCart(cart.filter(item => item.itemName !== itemName));
+  const handleRemoveFromCart = (itemId) => {
+    setCart((prev) => prev.filter((c) => c.itemId !== itemId));
   };
 
   const handleSubmit = async () => {
+    setMessage('');
     if (cart.length === 0) {
       setMessage('Cart is empty.');
       return;
     }
     try {
-      const payload = cart.map(item => ({ ...item, requestedBy: user?.username || 'Unknown' }));
-      await axios.post('http://localhost:5050/api/requests/bulk', { requests: payload });
+      await axios.post(`${API_BASE}/api/requests`, {
+        requests: cart.map(({ itemId, quantity, note }) => ({ itemId, quantity, note })),
+        requestedBy: user?.username || 'Unknown',
+      });
       setCart([]);
       setMessage('Requests submitted successfully!');
     } catch (err) {
@@ -63,16 +75,19 @@ const RequestPage = () => {
   return (
     <div style={styles.container}>
       <h2 style={styles.header}>🛒 Request Multiple Items</h2>
+
       <div style={styles.form}>
         <label style={styles.label}>Select Item:</label>
         <select
-          value={selectedItem}
-          onChange={(e) => setSelectedItem(e.target.value)}
+          value={selectedItemId}
+          onChange={(e) => setSelectedItemId(e.target.value)}
           style={styles.input}
         >
           <option value="">-- Choose an item --</option>
           {items.map((item) => (
-            <option key={item._id} value={item.name}>{item.name}</option>
+            <option key={item._id} value={item._id}>
+              {item.name} (Available: {item.quantity ?? 0})
+            </option>
           ))}
         </select>
 
@@ -80,9 +95,9 @@ const RequestPage = () => {
         <input
           type="number"
           value={quantity}
+          min="1"
           onChange={(e) => setQuantity(e.target.value)}
           style={styles.input}
-          min="1"
         />
 
         <label style={styles.label}>Note (optional):</label>
@@ -93,23 +108,36 @@ const RequestPage = () => {
           rows={3}
         />
 
-        <button type="button" style={styles.button} onClick={handleAddToCart}>Add to Cart</button>
+        <button type="button" style={styles.button} onClick={handleAddToCart}>
+          Add to Cart
+        </button>
       </div>
 
       <div style={styles.cartBox}>
         <h3>🧾 Cart</h3>
-        {cart.length === 0 ? <p>No items in cart.</p> : (
+        {cart.length === 0 ? (
+          <p>No items in cart.</p>
+        ) : (
           <ul>
-            {cart.map((item, index) => (
-              <li key={index} style={styles.cartItem}>
-                <strong>{item.itemName}</strong> (x{item.quantity})
-                {item.note && <span> - {item.note}</span>}
-                <button style={styles.removeBtn} onClick={() => handleRemoveFromCart(item.itemName)}>Remove</button>
+            {cart.map((item) => (
+              <li key={item.itemId} style={styles.cartItem}>
+                <strong>{item.name}</strong> (x{item.quantity})
+                {item.note && <span> — {item.note}</span>}
+                <button
+                  style={styles.removeBtn}
+                  onClick={() => handleRemoveFromCart(item.itemId)}
+                >
+                  Remove
+                </button>
               </li>
             ))}
           </ul>
         )}
-        <button style={styles.submitBtn} onClick={handleSubmit}>Submit Request</button>
+
+        <button style={styles.submitBtn} onClick={handleSubmit} disabled={cart.length === 0}>
+          Submit Request
+        </button>
+
         {message && <p style={styles.message}>{message}</p>}
       </div>
     </div>
@@ -147,7 +175,7 @@ const styles = {
     width: '100%',
     padding: '8px',
     borderRadius: '5px',
-    border: '1px solid #ccc',
+    border: '1px solid '#ccc',
     marginBottom: '10px',
     fontSize: '14px'
   },

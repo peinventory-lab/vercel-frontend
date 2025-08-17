@@ -1,6 +1,10 @@
+// src/components/SignupPage.js
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+
+// ✅ Use environment variable or fallback to localhost (for dev)
+const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5050';
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -20,11 +24,14 @@ const SignupPage = () => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
+    setError('');
     try {
-      await axios.post('http://localhost:5050/api/auth/signup', formData);
-      navigate('/');
+      // ✅ Point signup request to API_BASE
+      await axios.post(`${API_BASE}/api/auth/signup`, formData);
+      navigate('/'); // back to login
     } catch (err) {
-      setError('Signup failed. Try again.');
+      const msg = err?.response?.data?.message || 'Signup failed. Try again.';
+      setError(msg);
     }
   };
 
@@ -32,7 +39,7 @@ const SignupPage = () => {
     <div style={styles.container}>
       <div style={styles.overlay}>
         <div style={styles.card}>
-          {/* 🟢 PE Logo image */}
+          {/* PE Logo */}
           <img
             src="/pe-logo.jpeg"
             alt="Project Exploration Logo"

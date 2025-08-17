@@ -3,11 +3,12 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 
-const API = 'http://localhost:5050/api/auth';
+const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5050';
 
 export default function ResetPasswordPage() {
   const { token } = useParams();
   const navigate = useNavigate();
+
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [status, setStatus] = useState({ type: '', msg: '' });
@@ -28,14 +29,16 @@ export default function ResetPasswordPage() {
 
     setLoading(true);
     try {
-      await axios.post(`${API}/reset-password`, { token, password });
+      // Backend route: POST /api/auth/reset-password/:token  { password }
+      await axios.post(`${API_BASE}/api/auth/reset-password/${token}`, { password });
+
       setStatus({ type: 'ok', msg: 'Password updated successfully. Redirecting…' });
       setTimeout(() => navigate('/'), 1200);
     } catch (err) {
-      setStatus({
-        type: 'err',
-        msg: err.response?.data?.message || 'Invalid or expired link.',
-      });
+      const msg =
+        err?.response?.data?.message ||
+        'Invalid or expired link. Please request a new reset email.';
+      setStatus({ type: 'err', msg });
     } finally {
       setLoading(false);
     }
@@ -43,7 +46,8 @@ export default function ResetPasswordPage() {
 
   return (
     <div style={wrap}>
-      <h2>Set a New Password</h2>
+      <h2 style={{ marginBottom: 12 }}>Set a New Password</h2>
+
       <form onSubmit={submit} style={form}>
         <input
           type="password"
@@ -51,6 +55,7 @@ export default function ResetPasswordPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          autoComplete="new-password"
           style={input}
         />
         <input
@@ -59,21 +64,58 @@ export default function ResetPasswordPage() {
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
           required
+          autoComplete="new-password"
           style={input}
         />
         <button type="submit" style={btn} disabled={loading}>
           {loading ? 'Saving…' : 'Update password'}
         </button>
       </form>
+
       {status.msg && (
-        <p style={{ color: status.type === 'ok' ? '#2e7d32' : '#c62828' }}>{status.msg}</p>
+        <p style={{ color: status.type === 'ok' ? '#2e7d32' : '#ffcdc9', marginTop: 12 }}>
+          {status.msg}
+        </p>
       )}
-      <Link to="/" style={{ color: '#fff' }}>Back to login</Link>
+
+      <div style={{ marginTop: 16 }}>
+        <Link to="/" style={{ color: '#cfe8ff', textDecoration: 'underline' }}>
+          Back to login
+        </Link>
+      </div>
     </div>
   );
 }
 
-const wrap = { padding: 24, maxWidth: 420, margin: '40px auto', color: '#fff' };
-const form = { display: 'flex', gap: 8, flexDirection: 'column' };
-const input = { padding: 12, borderRadius: 8, border: '1px solid #ccc', color: '#000' };
-const btn = { padding: 12, borderRadius: 8, border: 'none', cursor: 'pointer' };
+const wrap = {
+  minHeight: '100vh',
+  padding: 24,
+  maxWidth: 420,
+  margin: '0 auto',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  color: '#fff',
+  background: 'linear-gradient(to right, #0f2027, #203a43, #2c5364)',
+  fontFamily: 'Arial, sans-serif',
+};
+
+const form = { display: 'flex', gap: 10, flexDirection: 'column' };
+
+const input = {
+  padding: 12,
+  borderRadius: 8,
+  border: '1px solid #ccc',
+  color: '#000',
+  background: '#fff',
+};
+
+const btn = {
+  padding: 12,
+  borderRadius: 8,
+  border: 'none',
+  cursor: 'pointer',
+  background: '#007bff',
+  color: '#fff',
+  fontWeight: 'bold',
+};

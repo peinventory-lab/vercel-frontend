@@ -2,6 +2,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
+// ✅ Use environment variable for backend base URL
+const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5050';
+
 const AddInventoryItemForm = ({ onAdd }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -21,7 +24,8 @@ const AddInventoryItemForm = ({ onAdd }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5050/api/inventory/add', formData);
+      // ✅ Use API_BASE here
+      await axios.post(`${API_BASE}/api/inventory/add`, formData);
       setMessage('Item added successfully!');
       setFormData({ name: '', description: '', location: '', quantity: '' });
       onAdd();

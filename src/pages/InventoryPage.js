@@ -2,7 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:5050/api';
+// const API_BASE = 'http://localhost:5050/api';
+const API_BASE =
+  process.env.REACT_APP_API_BASE_URL || 'http://localhost:5050';
 
 // utility to normalize location strings
 const norm = (v) => (v ?? '').toString().trim().toUpperCase();
@@ -24,7 +26,7 @@ const InventoryPage = () => {
 
   const fetchItems = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/inventory`);
+      const res = await axios.get(`${API_BASE}/api/inventory`);
       setItems(res.data || []);
     } catch (err) {
       console.error('Error fetching inventory:', err);
@@ -33,7 +35,7 @@ const InventoryPage = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${API_BASE}/inventory/delete/${id}`);
+      await axios.delete(`${API_BASE}/api/inventory/delete/${id}`); // ✅ add /api
       fetchItems();
     } catch (err) {
       console.error('Error deleting item:', err);
@@ -54,7 +56,7 @@ const InventoryPage = () => {
     if (!formName || !formLocation || formQuantity === '') return;
 
     try {
-      await axios.put(`${API_BASE}/inventory/edit/${selectedItemId}`, {
+      await axios.put(`${API_BASE}/api/inventory/edit/${selectedItemId}`, { // ✅ add /api
         name: formName.trim(),
         description: formDescription.trim(),
         location: formLocation.trim(),

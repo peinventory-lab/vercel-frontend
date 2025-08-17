@@ -1,5 +1,8 @@
+// src/pages/RequestItemsPage.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+
+const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5050';
 
 const RequestItemsPage = () => {
   const [inventory, setInventory] = useState([]);
@@ -14,8 +17,8 @@ const RequestItemsPage = () => {
   useEffect(() => {
     const fetchInventory = async () => {
       try {
-        const res = await axios.get('http://localhost:5050/api/inventory');
-        setInventory(res.data);
+        const res = await axios.get(`${API_BASE}/api/inventory`);
+        setInventory(res.data || []);
       } catch (err) {
         console.error('Error fetching inventory:', err);
       }
@@ -25,8 +28,9 @@ const RequestItemsPage = () => {
 
   const fetchRequestHistory = async () => {
     try {
-      const res = await axios.get(`http://localhost:5050/api/requests/user/${user.username}`);
-      setRequestHistory(res.data);
+      if (!user?.username) return;
+      const res = await axios.get(`${API_BASE}/api/requests/user/${user.username}`);
+      setRequestHistory(res.data || []);
     } catch (err) {
       console.error('Error fetching request history:', err);
     }
@@ -34,11 +38,13 @@ const RequestItemsPage = () => {
 
   useEffect(() => {
     fetchRequestHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const addRequest = () => {
     if (!selectedItem || quantity < 1) return;
     const item = inventory.find(i => i._id === selectedItem);
+    if (!item) return;
     setRequests(prev => [...prev, { itemId: selectedItem, name: item.name, quantity }]);
     setQuantity(1);
     setSelectedItem('');
@@ -46,7 +52,8 @@ const RequestItemsPage = () => {
 
   const submitRequests = async () => {
     try {
-      await axios.post('http://localhost:5050/api/requests', {
+      if (!user?.username || requests.length === 0) return;
+      await axios.post(`${API_BASE}/api/requests`, {
         requests: requests.map(({ itemId, quantity }) => ({ itemId, quantity })),
         requestedBy: user.username,
       });
@@ -84,7 +91,7 @@ const RequestItemsPage = () => {
               <option value="">Select Item</option>
               {inventory.map(item => (
                 <option key={item._id} value={item._id}>
-                  {item.name} (Available: {item.count})
+                  {item.name} (Available: {item.quantity ?? 0})
                 </option>
               ))}
             </select>

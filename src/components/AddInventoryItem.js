@@ -2,6 +2,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
+// ✅ Use environment variable or fallback
+const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5050';
+
 const AddInventoryItem = ({ onItemAdded }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -22,7 +25,8 @@ const AddInventoryItem = ({ onItemAdded }) => {
     e.preventDefault();
 
     try {
-      const res = await axios.post('http://localhost:5050/api/inventory/add', formData);
+      // ✅ Use API_BASE here
+      const res = await axios.post(`${API_BASE}/api/inventory/add`, formData);
       alert('Item added successfully!');
       setFormData({ name: '', description: '', location: '', quantity: '' });
 

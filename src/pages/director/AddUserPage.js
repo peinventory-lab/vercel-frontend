@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
+// ✅ Use environment variable for production, fallback to localhost in dev
+const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5050';
+
 const AddUserPage = () => {
   const [userData, setUserData] = useState({
     username: '',
@@ -12,11 +15,12 @@ const AddUserPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5050/api/auth/signup', userData);
+      await axios.post(`${API_BASE}/api/auth/signup`, userData);
       setMessage('✅ User added successfully!');
       setUserData({ username: '', password: '', role: 'stembassador' });
     } catch (error) {
-      setMessage('❌ Failed to add user. Please try again.');
+      const msg = error?.response?.data?.message || '❌ Failed to add user. Please try again.';
+      setMessage(msg);
     }
   };
 

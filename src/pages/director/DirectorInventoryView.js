@@ -1,5 +1,11 @@
+// src/pages/director/DirectorInventoryView.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+
+// ✅ Use env var in prod, fallback to localhost for dev
+const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5050';
+
+const up = (v) => (v ?? '').toString().trim().toUpperCase();
 
 const DirectorInventoryView = () => {
   const [items, setItems] = useState([]);
@@ -12,8 +18,8 @@ const DirectorInventoryView = () => {
 
   const fetchInventory = async () => {
     try {
-      const res = await axios.get('http://localhost:5050/api/inventory/all');
-      setItems(res.data);
+      const res = await axios.get(`${API_BASE}/api/inventory/all`);
+      setItems(res.data || []);
     } catch (err) {
       console.error('Error fetching inventory:', err);
     }
@@ -22,10 +28,8 @@ const DirectorInventoryView = () => {
   const groupByRack = (itemsList) => {
     const grouped = {};
     itemsList.forEach((item) => {
-      const rackKey = item.location?.toUpperCase() || 'Unknown Rack';
-      if (!grouped[rackKey]) {
-        grouped[rackKey] = [];
-      }
+      const rackKey = up(item.location) || 'UNKNOWN RACK';
+      if (!grouped[rackKey]) grouped[rackKey] = [];
       grouped[rackKey].push(item);
     });
     return grouped;
@@ -33,7 +37,7 @@ const DirectorInventoryView = () => {
 
   useEffect(() => {
     const filteredItems = filteredRack
-      ? items.filter((item) => item.location?.toUpperCase() === filteredRack)
+      ? items.filter((item) => up(item.location) === filteredRack)
       : items;
     setGroupedItems(groupByRack(filteredItems));
   }, [items, filteredRack]);
@@ -60,9 +64,14 @@ const DirectorInventoryView = () => {
     document.body.removeChild(link);
   };
 
-  const allRackOptions = Array.from(
-    new Set(items.map((item) => item.location?.toUpperCase()))
-  ).sort();
+  // Build unique, normalized, naturally sorted rack list
+  const allRackOptions = Array.from(new Set(items.map((i) => up(i.location))))
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+  const sortedRackKeys = Object.keys(groupedItems).sort((a, b) =>
+    a.localeCompare(b, undefined, { numeric: true })
+  );
 
   return (
     <div style={styles.container}>
@@ -88,7 +97,7 @@ const DirectorInventoryView = () => {
         </div>
       </div>
 
-      {Object.keys(groupedItems).sort().map((rack) => (
+      {sortedRackKeys.map((rack) => (
         <div key={rack} style={styles.rackSection}>
           <h3 style={styles.rackTitle}>📍 Rack {rack} ({groupedItems[rack].length} items)</h3>
           <table style={styles.table}>
@@ -113,6 +122,12 @@ const DirectorInventoryView = () => {
           </table>
         </div>
       ))}
+
+      {sortedRackKeys.length === 0 && (
+        <div style={{ background: '#fff', padding: 16, borderRadius: 8 }}>
+          No inventory found.
+        </div>
+      )}
     </div>
   );
 };
@@ -130,9 +145,7 @@ const styles = {
     alignItems: 'center',
     marginBottom: '20px',
   },
-  heading: {
-    margin: 0,
-  },
+  heading: { margin: 0 },
   label: {
     marginRight: '10px',
     fontWeight: 'bold',

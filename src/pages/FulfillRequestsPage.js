@@ -1,5 +1,8 @@
+// src/pages/FulfillRequestsPage.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+
+const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5050';
 
 const FulfillRequestsPage = () => {
   const [requests, setRequests] = useState([]);
@@ -12,7 +15,7 @@ const FulfillRequestsPage = () => {
 
   const fetchRequests = async () => {
     try {
-      const res = await axios.get('http://localhost:5050/api/requests');
+      const res = await axios.get(`${API_BASE}/api/requests`);
       setRequests(res.data);
     } catch (err) {
       console.error('Error fetching requests:', err);
@@ -21,7 +24,7 @@ const FulfillRequestsPage = () => {
 
   const handleAction = async (id, action) => {
     try {
-      await axios.put(`http://localhost:5050/api/requests/${action}/${id}`);
+      await axios.put(`${API_BASE}/api/requests/${action}/${id}`);
       setMessage(`Request ${action}ed successfully.`);
       fetchRequests();
     } catch (err) {
@@ -53,7 +56,7 @@ const FulfillRequestsPage = () => {
 
   const filteredRequests = requests.filter(r =>
     (r.itemName || r.itemId?.name || '').toLowerCase().includes(search.toLowerCase()) ||
-    r.requestedBy.toLowerCase().includes(search.toLowerCase())
+    (r.requestedBy || '').toLowerCase().includes(search.toLowerCase())
   );
 
   const total = filteredRequests.length;
