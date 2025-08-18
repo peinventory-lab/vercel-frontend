@@ -34,7 +34,10 @@ const LoginPage = () => {
         setError('Unknown role. Contact admin.');
       }
     } catch (err) {
-      setError('Login failed. Please check your credentials.');
+      const msg =
+        err.response?.data?.message ||
+        'Login failed. Please check your credentials.';
+      setError(msg);
     }
   };
 
@@ -79,16 +82,22 @@ const LoginPage = () => {
             </div>
 
             <div style={styles.linkContainer}>
-              <Link to="/forgot-password" style={styles.link}>Forgot Password?</Link>
+              <Link to="/forgot-password" style={styles.link}>
+                Forgot Password?
+              </Link>
             </div>
 
-            <button type="submit" style={styles.button}>Login</button>
+            <button type="submit" style={styles.button}>
+              Login
+            </button>
 
             {error && <p style={styles.error}>{error}</p>}
 
             <div style={styles.signupLink}>
               <span>New here? </span>
-              <Link to="/signup" style={styles.link}>Create an account</Link>
+              <Link to="/signup" style={styles.link}>
+                Create an account
+              </Link>
             </div>
           </form>
         </div>
