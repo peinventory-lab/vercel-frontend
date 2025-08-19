@@ -1,3 +1,4 @@
+// src/App.js
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
@@ -28,7 +29,7 @@ import RequestItemsPage from './pages/stembassador/RequestItemsPage';
 // Optional: a simple not-found
 const NotFound = () => <div style={{ padding: 24 }}>Page not found.</div>;
 
-// Auth guard
+// Your guard
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -41,25 +42,103 @@ function App() {
       <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
       {/* ---------- Authenticated (any role) ---------- */}
-      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
 
-      {/* ---------- Director Pages ---------- */}
-      <Route path="/dashboard/director" element={<ProtectedRoute><DirectorDashboard /></ProtectedRoute>} />
-      <Route path="/director/inventory" element={<ProtectedRoute><InventorySummaryPage /></ProtectedRoute>} />
-      <Route path="/dashboard/director/add-user" element={<ProtectedRoute><AddUserPage /></ProtectedRoute>} />
+      {/* ---------- Director-only ---------- */}
+      <Route
+        path="/dashboard/director"
+        element={
+          <ProtectedRoute role="director">
+            <DirectorDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/director/inventory"
+        element={
+          <ProtectedRoute role="director">
+            <InventorySummaryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/director/add-user"
+        element={
+          <ProtectedRoute role="director">
+            <AddUserPage />
+          </ProtectedRoute>
+        }
+      />
 
-      {/* ---------- Inventory Manager Pages ---------- */}
-      <Route path="/dashboard/inventory" element={<ProtectedRoute><InventoryManagerDashboard /></ProtectedRoute>} />
-      <Route path="/inventory" element={<ProtectedRoute><InventoryPage /></ProtectedRoute>} />
-      <Route path="/approve" element={<ProtectedRoute><ApprovePage /></ProtectedRoute>} />
-      <Route path="/request" element={<ProtectedRoute><FulfillRequestsPage /></ProtectedRoute>} />
+      {/* ---------- Inventory Manager-only ---------- */}
+      <Route
+        path="/dashboard/inventory"
+        element={
+          <ProtectedRoute role="inventoryManager">
+            <InventoryManagerDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/inventory"
+        element={
+          <ProtectedRoute role="inventoryManager">
+            <InventoryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/approve"
+        element={
+          <ProtectedRoute role="inventoryManager">
+            <ApprovePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/request"
+        element={
+          <ProtectedRoute role="inventoryManager">
+            <FulfillRequestsPage />
+          </ProtectedRoute>
+        }
+      />
 
-      {/* ---------- STEMbassador Pages ---------- */}
-      <Route path="/dashboard/stembassador" element={<ProtectedRoute><StembassadorDashboard /></ProtectedRoute>} />
-      <Route path="/stembassador/request" element={<ProtectedRoute><RequestItemsPage /></ProtectedRoute>} />
-      <Route path="/request-items" element={<ProtectedRoute><RequestItemsPage /></ProtectedRoute>} />
+      {/* ---------- STEMbassador-only ---------- */}
+      <Route
+        path="/dashboard/stembassador"
+        element={
+          <ProtectedRoute role="stembassador">
+            <StembassadorDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/stembassador/request"
+        element={
+          <ProtectedRoute role="stembassador">
+            <RequestItemsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/request-items"
+        element={
+          <ProtectedRoute role="stembassador">
+            <RequestItemsPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* ---------- Fallback ---------- */}
+      <Route path="/unauthorized" element={<div style={{ padding: 24 }}>Unauthorized</div>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
