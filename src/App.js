@@ -1,6 +1,6 @@
 // src/App.js
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 
 // Public pages
 import LoginPage from './components/LoginPage';
@@ -138,7 +138,7 @@ function App() {
       />
 
       {/* ---------- Fallback ---------- */}
-      <Route path="/unauthorized" element={<div style={{ padding: 24 }}>Unauthorized</div>} />
+      {/* <Route path="/unauthorized" element={<div style={{ padding: 24 }}>Unauthorized</div>} /> */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
