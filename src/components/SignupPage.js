@@ -27,7 +27,9 @@ const SignupPage = () => {
     setError('');
     try {
       // ✅ Point signup request to API_BASE
-      await axios.post(`${API_BASE}/api/auth/signup`, formData);
+     await axios.post(`${API_BASE}/api/auth/signup`, formData, {
+  withCredentials: true
+});
       navigate('/'); // back to login
     } catch (err) {
       const msg = err?.response?.data?.message || 'Signup failed. Try again.';
