@@ -1,5 +1,3 @@
-// src/App.js
-import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
 // Public pages
@@ -86,14 +84,17 @@ function App() {
           </ProtectedRoute>
         }
       />
+
+      {/* ✅ ALLOW both inventoryManager and stembassador */}
       <Route
         path="/inventory"
         element={
-          <ProtectedRoute role="inventoryManager">
+          <ProtectedRoute role={["inventoryManager", "stembassador"]}>
             <InventoryPage />
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/approve"
         element={
@@ -137,9 +138,9 @@ function App() {
         }
       />
 
-     {/* ---------- Fallback ---------- */}
-    /*<Route path="/unauthorized" element={<div style={{ padding: 24 }}>Unauthorized</div>} />*/
-    <Route path="*" element={<NotFound />} />
+      {/* ---------- Fallback ---------- */}
+      <Route path="/unauthorized" element={<div style={{ padding: 24 }}>Unauthorized</div>} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
