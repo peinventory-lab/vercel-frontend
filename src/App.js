@@ -91,7 +91,7 @@ function App() {
         element={
           <ProtectedRoute roles={['inventoryManager', 'stembassador', 'director']}>
           
-          
+        
             <InventoryPage />
           </ProtectedRoute>
         }
