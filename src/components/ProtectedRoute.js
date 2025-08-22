@@ -9,14 +9,14 @@ const ProtectedRoute = ({ children, role, roles }) => {
   }
 
   // If a single role is required
-  if (role && user.role !== role) {
-    return <Navigate to="/unauthorized" />;
-  }
+  // if (role && user.role !== role) {
+  //   return <Navigate to="/unauthorized" />;
+  // }
 
   // If multiple roles are allowed
-  if (roles && !roles.includes(user.role)) {
-    return <Navigate to="/unauthorized" />;
-  }
+  // if (roles && !roles.includes(user.role)) {
+  //   return <Navigate to="/unauthorized" />;
+  // }
 
   return children;
 };
