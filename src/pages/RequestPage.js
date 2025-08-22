@@ -175,7 +175,7 @@ const styles = {
     width: '100%',
     padding: '8px',
     borderRadius: '5px',
-    border: '1px solid '#ccc',
+    border: '1px solid #ccc',
     marginBottom: '10px',
     fontSize: '14px'
   },

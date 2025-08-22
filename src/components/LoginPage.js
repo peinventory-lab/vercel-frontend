@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
-const API_BASE = 'https://vercel-backend-rosy-sigma.vercel.app';
+const API_BASE = 'https://vercel-backend-rosy-sigma.vercel.app' || 'http://localhost:5050';
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
