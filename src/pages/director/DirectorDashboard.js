@@ -27,13 +27,17 @@ const DirectorDashboard = () => {
       </div>
 
       <div style={styles.sections}>
+        {/* Only inventory card remains */}
         <div style={styles.card}>
           <h3>📦 View Inventory Summary</h3>
           <p>Check stock status across all categories.</p>
-          <button style={styles.cardBtn} onClick={() => navigate('/director/inventory')}>Go</button>
+          <button
+            style={styles.cardBtn}
+            onClick={() => navigate('/director/inventory')}
+          >
+            Go
+          </button>
         </div>
-
-        
       </div>
     </div>
   );
