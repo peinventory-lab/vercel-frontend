@@ -1,9 +1,5 @@
-// src/pages/InventorySummaryPage.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-
-const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5050';
-const norm = (v) => (v ?? '').toString().trim().toUpperCase();
 
 const InventorySummaryPage = () => {
   const [items, setItems] = useState([]);
@@ -12,15 +8,15 @@ const InventorySummaryPage = () => {
 
   // Define all racks (A1–I4)
   const allRacks = [
-    'A1','A2','A3',
-    'B1','B2','B3',
-    'C1','C2','C3',
-    'D1','D2','D3',
-    'E1','E2','E3',
-    'F1','F2','F3',
-    'G1','G2','G3',
-    'H1','H2','H3',
-    'I1','I2','I3','I4'
+    'A1', 'A2', 'A3',
+    'B1', 'B2', 'B3',
+    'C1', 'C2', 'C3',
+    'D1', 'D2', 'D3',
+    'E1', 'E2', 'E3',
+    'F1', 'F2', 'F3',
+    'G1', 'G2', 'G3',
+    'H1', 'H2', 'H3',
+    'I1', 'I2', 'I3', 'I4'
   ];
 
   useEffect(() => {
@@ -29,8 +25,8 @@ const InventorySummaryPage = () => {
 
   const fetchInventory = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/api/inventory/all`);
-      setItems(res.data || []);
+      const res = await axios.get('http://localhost:5050/api/inventory/all');
+      setItems(res.data);
     } catch (err) {
       console.error('Error fetching inventory:', err);
     }
@@ -38,16 +34,16 @@ const InventorySummaryPage = () => {
 
   const groupByRack = (itemsList) => {
     const grouped = {};
-    // initialize all known racks with empty arrays
-    allRacks.forEach(rack => { grouped[rack] = []; });
-    // keep a bucket for unknown/misc locations
-    grouped['Unknown'] = [];
+    allRacks.forEach(rack => {
+      grouped[rack] = [];
+    });
 
     itemsList.forEach((item) => {
-      const loc = norm(item.location);
+      const loc = item.location?.toUpperCase() || 'Unknown';
       if (grouped[loc]) {
         grouped[loc].push(item);
       } else {
+        grouped['Unknown'] = grouped['Unknown'] || [];
         grouped['Unknown'].push(item);
       }
     });
@@ -57,7 +53,7 @@ const InventorySummaryPage = () => {
 
   useEffect(() => {
     const filteredItems = filteredRack
-      ? items.filter((item) => norm(item.location) === filteredRack)
+      ? items.filter((item) => item.location?.toUpperCase() === filteredRack)
       : items;
 
     setGroupedItems(groupByRack(filteredItems));
@@ -68,8 +64,8 @@ const InventorySummaryPage = () => {
     const rows = items.map((item) => [
       item.name,
       item.description || '',
-      item.location || '',
-      item.quantity ?? ''
+      item.location,
+      item.quantity,
     ]);
 
     const csvContent =
@@ -84,12 +80,6 @@ const InventorySummaryPage = () => {
     link.click();
     document.body.removeChild(link);
   };
-
-  // order: all racks in defined order, then Unknown at the end if present
-  const racksToRender = [
-    ...allRacks,
-    ...(groupedItems['Unknown'] && groupedItems['Unknown'].length > 0 ? ['Unknown'] : [])
-  ];
 
   return (
     <div style={styles.container}>
@@ -106,7 +96,6 @@ const InventorySummaryPage = () => {
             {allRacks.map((rack) => (
               <option key={rack} value={rack}>{rack}</option>
             ))}
-            <option value="Unknown">Unknown</option>
           </select>
           <button onClick={downloadCSV} style={styles.downloadBtn}>
             ⬇️ Download CSV
@@ -114,12 +103,10 @@ const InventorySummaryPage = () => {
         </div>
       </div>
 
-      {racksToRender.map((rack) => (
+      {Object.keys(groupedItems).sort().map((rack) => (
         <div key={rack} style={styles.rackSection}>
-          <h3 style={styles.rackTitle}>
-            📍 Rack {rack} ({(groupedItems[rack] || []).length} items)
-          </h3>
-          {(groupedItems[rack] || []).length > 0 ? (
+          <h3 style={styles.rackTitle}>📍 Rack {rack} ({groupedItems[rack].length} items)</h3>
+          {groupedItems[rack].length > 0 ? (
             <table style={styles.table}>
               <thead>
                 <tr>
@@ -134,14 +121,14 @@ const InventorySummaryPage = () => {
                   <tr key={item._id} style={styles.rowBorder}>
                     <td>{item.name}</td>
                     <td>{item.description || '—'}</td>
-                    <td>{item.location || '—'}</td>
-                    <td>{item.quantity ?? '—'}</td>
+                    <td>{item.location}</td>
+                    <td>{item.quantity}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           ) : (
-            <p style={{ marginLeft: '10px', color: '#ddd' }}>No items in this rack.</p>
+            <p style={{ marginLeft: '10px', color: '#555' }}>No items in this rack.</p>
           )}
         </div>
       ))}
@@ -163,9 +150,17 @@ const styles = {
     alignItems: 'center',
     marginBottom: '20px'
   },
-  heading: { margin: 0 },
-  label: { marginRight: '10px', fontWeight: 'bold' },
-  select: { padding: '5px', marginRight: '10px' },
+  heading: {
+    margin: 0
+  },
+  label: {
+    marginRight: '10px',
+    fontWeight: 'bold'
+  },
+  select: {
+    padding: '5px',
+    marginRight: '10px'
+  },
   downloadBtn: {
     padding: '5px 10px',
     backgroundColor: '#007bff',
@@ -182,9 +177,16 @@ const styles = {
     borderRadius: '10px',
     boxShadow: '0 0 8px rgba(0,0,0,0.08)'
   },
-  rackTitle: { marginBottom: '10px' },
-  table: { width: '100%', borderCollapse: 'collapse' },
-  rowBorder: { borderBottom: '1px solid #ddd' },
+  rackTitle: {
+    marginBottom: '10px'
+  },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse'
+  },
+  rowBorder: {
+    borderBottom: '1px solid #ddd'
+  },
   leftAlign: {
     textAlign: 'left',
     padding: '8px',
