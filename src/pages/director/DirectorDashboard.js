@@ -40,11 +40,11 @@ const DirectorDashboard = () => {
         </div>
 
         {/* 👇 This is the card to remove */}
-      <div className="card">
-        <h3>✅ Review Requests</h3>
-        <p>Approve or reject item requests from STEMbassadors.</p>
-        <button onClick={() => navigate('/director/requests')}>Go</button>
-      </div>
+        <div style={styles.card}>
+          <h3>✅ Review Requests</h3>
+          <p>Approve or reject item requests from STEMbassadors.</p>
+          <button style={styles.cardBtn} onClick={() => navigate('/approve')}>Go</button>
+        </div>
       </div>
     </div>
   );
