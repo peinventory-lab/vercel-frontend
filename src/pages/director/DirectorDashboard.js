@@ -38,6 +38,13 @@ const DirectorDashboard = () => {
             Go
           </button>
         </div>
+
+        {/* 👇 This is the card to remove */}
+      <div className="card">
+        <h3>✅ Review Requests</h3>
+        <p>Approve or reject item requests from STEMbassadors.</p>
+        <button onClick={() => navigate('/director/requests')}>Go</button>
+      </div>
       </div>
     </div>
   );
