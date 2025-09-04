@@ -99,7 +99,7 @@ function App() {
       <Route
         path="/approve"
         element={
-          <ProtectedRoute role="inventoryManager">
+          <ProtectedRoute role={['inventoryManager', 'director']}>
             <ApprovePage />
           </ProtectedRoute>
         }
